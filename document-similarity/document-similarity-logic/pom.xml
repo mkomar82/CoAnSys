@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>pl.edu.icm.coansys</groupId>
 		<artifactId>document-similarity</artifactId>
-		<version>1.10-rc3-SNAPSHOT</version>
+		<version>1.10-final-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>document-similarity-logic</artifactId>
@@ -95,7 +95,7 @@
 		<dependency>
 		<groupId>org.apache.oozie</groupId>
 		<artifactId>oozie-client</artifactId>
-		<version>4.1.0-cdh5.4.2</version>
+		<version>4.1.0-cdh5.7.1</version>
 		</dependency>
          <dependency>
             <groupId>org.apache.pig</groupId>

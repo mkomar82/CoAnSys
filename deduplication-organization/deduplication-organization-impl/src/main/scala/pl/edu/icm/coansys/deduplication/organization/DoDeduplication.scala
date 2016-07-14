@@ -10,6 +10,7 @@ import org.apache.spark.SparkConf
 import scala.collection.JavaConversions._
 import org.apache.spark.graphx.lib.ConnectedComponents
 import org.apache.spark.rdd.RDD
+import pl.edu.icm.coansys.constants.OrganizationsConstants
 import pl.edu.icm.coansys.models.OrganizationProtos.OrganizationWrapper
 import com.google.common.hash.HashCode
 import org.apache.spark.graphx._
@@ -41,7 +42,7 @@ object DoDeduplication {
   
   
   def dedupOrganizations(organizations:RDD[OrganizationWrapper]):RDD[Array[Byte]] = {
-     val toEdges = organizations.flatMap[(String, Array[Byte])] {
+    val toEdges = organizations.flatMap[(String, Array[Byte])] {
        record => {
         ((record.getOrganizationMetadata.getOriginalNameList.map(
           (name: String) => (simplify(name), record.toByteArray)
@@ -100,13 +101,26 @@ object DoDeduplication {
 //              println(ow2.getRowId);
               val ow1=OrganizationWrapper.parseFrom(ow1b)
               val ow2=OrganizationWrapper.parseFrom(ow2b)
-             
+              val id1=ow1.getRowId
+              val id2=ow2.getRowId
+              
               val builder=ow1.toBuilder
               val onameslist=ow2.getOrganizationMetadata.getOriginalNameList;
+              val idslist=ow2.getOrganizationMetadata.getOtherIdList;
               builder.mergeFrom(ow2);
               onameslist.removeAll(ow1.getOrganizationMetadata.getOriginalNameList);
               builder.getOrganizationMetadataBuilder.addAllOriginalName(onameslist);
-              
+             
+              builder.getOrganizationMetadataBuilder.addAllOtherId(idslist);
+              if (builder.getRowId.equalsIgnoreCase(id2)) {
+                builder.getOrganizationMetadataBuilder.
+                  addOtherIdBuilder.
+                  setKey(OrganizationsConstants.COANSYS_MODULE_OLD_ID_ORGANIZATION_DEDUPLICATION).setValue(id1)
+              } else {
+                 builder.getOrganizationMetadataBuilder.
+                  addOtherIdBuilder.
+                  setKey(OrganizationsConstants.COANSYS_MODULE_OLD_ID_ORGANIZATION_DEDUPLICATION).setValue(id2)
+              }
              
               builder.build.toByteArray
           })
@@ -128,14 +142,23 @@ object DoDeduplication {
     val conf = new SparkConf().setAppName("Organization deduplication")
     val sc = new SparkContext(conf)
     val logData = sc.sequenceFile[String, BytesWritable](organizationFile);
-    val organizations= logData.map{
+    val orgBytes=logData.map{
       case (key, bw)=> {
-          OrganizationWrapper.parseFrom(bw.copyBytes);
+          (key,bw.copyBytes)
         }
     }
+    if (orgBytes.isEmpty) {
+      
+      orgBytes.saveAsSequenceFile(args(1));
+    } else {
+      val organizations= orgBytes.map{
+        case (key,bw)=> {
+          OrganizationWrapper.parseFrom(bw);
+        }
+      }
     dedupOrganizations(organizations).map((o:Array[Byte])=> {(OrganizationWrapper.parseFrom(o).getRowId,o)})
     .saveAsSequenceFile(args(1));
-     
+    }
     
     
  }

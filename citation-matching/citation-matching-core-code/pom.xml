@@ -3,7 +3,7 @@
   <parent>
     <groupId>pl.edu.icm.coansys</groupId>
     <artifactId>citation-matching</artifactId>
-    <version>1.10-rc3-SNAPSHOT</version>
+    <version>1.10-final-SNAPSHOT</version>
   </parent>
   <artifactId>citation-matching-core-code</artifactId>     
   
@@ -47,6 +47,18 @@
             <version>${project.version}</version>
             <exclusions>
                 <exclusion>
+                    <groupId>org.mortbay.jetty</groupId>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.mortbay.jetty</groupId>
+                    <artifactId>jsp</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.mortbay.jetty</groupId>
+                    <artifactId>jsp-api</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.apache.hadoop</groupId>
                     <artifactId>hadoop-core</artifactId>
                 </exclusion>
@@ -54,12 +66,13 @@
                     <artifactId>guava</artifactId>
                     <groupId>com.google.guava</groupId>
                 </exclusion>
+                
             </exclusions>
         </dependency>
         <dependency>
             <groupId>pl.edu.icm.cermine</groupId>
             <artifactId>cermine-impl</artifactId>
-            <version>1.8</version>
+            <version>1.9</version>
         </dependency>
         
         <dependency>
